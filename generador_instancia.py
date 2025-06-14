@@ -33,9 +33,9 @@ with open("salida.txt", "w") as f:
         lineas = []
         for i in range(cant_clientes):
             for j in range(i, cant_clientes): #ir de 1 a 2 = ir de 2 a 1, lo usa en la class que crearon los profes
-                d = np.linalg.norm(coords[i] - coords[j])
+                d = round(np.linalg.norm(coords[i] - coords[j])) # Redondeamos ?? la class espera int
                 # en princpio costos = distancia
-                linea = f"{i+1} {j+1} {d:.2f} {d:.2f}" # redondeo ?
+                linea = f"{i+1} {j+1} {d} {d}"
                 lineas.append(linea)
 
         return lineas
