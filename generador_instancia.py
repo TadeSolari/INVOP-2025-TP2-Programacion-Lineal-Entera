@@ -42,5 +42,6 @@ with open("salida.txt", "w") as f:
 
     lineas = generador_distancias_costos(int(cant_clientes))
 
-    for linea in lineas:
-        f.write(linea + "\n")
+    for i in range(len(lineas)-1):
+        f.write(lineas[i] + "\n")
+    f.write(lineas[-1])
