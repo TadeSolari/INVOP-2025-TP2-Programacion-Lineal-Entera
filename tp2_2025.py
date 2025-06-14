@@ -19,15 +19,15 @@ class InstanciaRecorridoMixto:
         f = open(filename)
 
         # leemos la cantidad de clientes
-        self.cantidad_clientes = int(f.readline())
+        self.cant_clientes = int(f.readline())
         # leemos el costo por pedido del repartidor
         self.costo_repartidor = int(f.readline())
         # leemos la distamcia maxima del repartidor
         self.d_max = int(f.readline())
         
         # inicializamos distancias y costos con un valor muy grande (por si falta algun par en los datos)
-        self.distancias = [[1000000 for _ in range(self.cantidad_clientes)] for _ in range(self.cantidad_clientes)]
-        self.costos = [[1000000 for _ in range(self.cantidad_clientes)] for _ in range(self.cantidad_clientes)]
+        self.distancias = [[1000000 for _ in range(self.cant_clientes)] for _ in range(self.cant_clientes)]
+        self.costos = [[1000000 for _ in range(self.cant_clientes)] for _ in range(self.cant_clientes)]
         
         # leemos la cantidad de refrigerados
         cantidad_refrigerados = int(f.readline())
@@ -77,24 +77,23 @@ def agregar_variables(prob, instancia):
 
     # Xij = 1 si el camion se mueve del cliente i al cliente j / 0 cc
     n = instancia.cant_clientes
-    nombres = [f"X_{i+1}{j+1}" for i in range(n) for j in range(n) if i != j]
-    coeficientes_funcion_objetivo = [instancia.costos[i][j] for i in range(n) for j in range(instancia.cant_clientes) if i != j]
+    nombres_Xij = [f"X_{i+1}{j+1}" for i in range(n) for j in range(n) if i != j]
+    coeficientes_funcion_objetivo = [instancia.costos[i][j] for i in range(n) for j in range(n) if i != j]
     
     # Agregar las variables
     prob.variables.add(obj = coeficientes_funcion_objetivo, 
-                       lb = [0]*len(nombres), 
-                       ub = [1]*len(nombres), 
-                       types= ['B']*len(nombres), 
-                       names=nombres)
+                    #    lb = [0]*len(nombres_Xij), 
+                    #    ub = [1]*len(nombres_Xij), 
+                       types= ['B']*len(nombres_Xij), 
+                       names=nombres_Xij)
     
     # U_i = orden en que se visita la ciudad i. (i = 2 hasta n)
-    # Declaro al cliente 1 como el primero => U_1 = 1
-    nombres = [f"U_{i+1}" for i in range(n)]
-    prob.variables.add(obj = [0] * n, 
-                        lb = [2] * n, 
-                        ub = [n] * n, 
-                        types= ['I'] * n, 
-                        names=nombres)
+    # Declaro al cliente 1 como el primero en visitarse => U_1 = 1
+    nombres_U = [f"U_{i+1}" for i in range(n)]
+    prob.variables.add(lb = [1] + [2]*(n - 1), 
+                       ub = [1] + [n]*(n - 1), 
+                       types= ['I'] * n, 
+                       names=nombres_U)
 
 def agregar_restricciones(prob, instancia):
     # Agregar las restricciones ax <= (>= ==) b:
@@ -110,25 +109,26 @@ def agregar_restricciones(prob, instancia):
     # elemento.
 
     n = instancia.cant_clientes
-    valores = [1] * len(n - 1) # -1 pq no contamos los repetidos
+    valores = [1] * (n - 1) # -1 pq no contamos los repetidos
 
-    for i in range(n-1):
-        index = [f"X_{i+1}{j+1}" for j in range(n-1) if i!=j]
-        index_inv = [f"X_{j+1}{i+1}" for j in range(4) if i!=j]
-        filas = [index, valores]
-        filas_inv = [index_inv, valores]
+    for i in range(n):
+        index = [f"X_{i+1}{j+1}" for j in range(n) if i!=j]
+        index_inv = [f"X_{j+1}{i+1}" for j in range(n) if i!=j]
+        fila = [index, valores]
+        fila_inv = [index_inv, valores]
+        
 
         # de toda ciudad tengo que salir
-        prob.linear_constraints.add(lin_expr=filas,
+        prob.linear_constraints.add(lin_expr=[fila],
                                     senses=['E'], 
                                     rhs=[1],
-                                    names = [f'Salgo de cliente{i+1}']) 
+                                    names = [f'Salgo_de_cliente{i+1}']) 
         
         # a toda ciudad se debe llegar
-        prob.linear_constraints.add(lin_expr=filas_inv,
+        prob.linear_constraints.add(lin_expr=[fila_inv],
                                     senses=['E'], 
                                     rhs=[1],
-                                    names = [f'Llego a cliente{i+1}']) 
+                                    names = [f'Llego_a_cliente{i+1}']) 
         
     # continuidad
     for i in range(1, n):
@@ -138,23 +138,17 @@ def agregar_restricciones(prob, instancia):
                 valores = [1, -1, n]
                 fila = [index, valores]
 
-                prob.linear_constraints.add(lin_expr=fila,
+                prob.linear_constraints.add(lin_expr=[fila],
                                             senses=['L'], 
                                             rhs=[n-1],
-                                            names = [f'Continuidad desde {i+1}']) 
+                                            names = [f'Continuidad_desde_{i+1}']) 
                 
-    # cliente 1 es el primero en visitarse
-    prob.linear_constraints.add(lin_expr=["U_1"],
-                                senses=['E'], 
-                                rhs=[1],
-                                names = ['Comienzo desde Cliente 1']) 
             
 
 def armar_lp(prob, instancia):
 
     # Agregar las variables
     agregar_variables(prob, instancia)
-   
     # Agregar las restricciones 
     agregar_restricciones(prob, instancia)
 
@@ -188,7 +182,7 @@ def mostrar_solucion(prob,instancia):
     x  = prob.solution.get_values()
 
     # Mostrar las variables con valor positivo (mayor que una tolerancia)
-    ..... 
+    # ..... 
 
 def main():
     
@@ -201,11 +195,11 @@ def main():
     # Definicion del modelo
     armar_lp(prob,instancia)
 
-    # Resolucion del modelo
-    resolver_lp(prob)
+    # # Resolucion del modelo
+    # resolver_lp(prob)
 
-    # Obtencion de la solucion
-    mostrar_solucion(prob,instancia)
+    # # Obtencion de la solucion
+    # mostrar_solucion(prob,instancia)
 
 if __name__ == '__main__':
     main()
