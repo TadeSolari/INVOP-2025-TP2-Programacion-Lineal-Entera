@@ -122,7 +122,7 @@ def agregar_variables(prob, instancia, version_modelo):
                         names = nombres_delta)
 
 
-def agregar_restricciones(prob, instancia, version_modelo):
+def agregar_restricciones(prob, instancia, version_modelo, deseables):
     # Agregar las restricciones ax <= (>= ==) b:
 	# funcion 'add' de 'linear_constraints' con parametros:
 	# lin_expr: lista de listas de [ind,val] de a
@@ -218,14 +218,26 @@ def agregar_restricciones(prob, instancia, version_modelo):
                                         names=[f"Atiendo_{j+1}"])
         
         # (7) Si es visitado a pie, el camión para cerca:
-        for (i, j) in instancia.pares_Y[i]:
-            idx_stop = [f"X_{i+1}{k+1}" for k in range(n) if k != i]
-            expr = [f"Y_{i+1}{j+1}"] + idx_stop
-            coefs = [1.0] + [-1.0]*len(idx_stop)
-            prob.linear_constraints.add(lin_expr=[[expr, coefs]], 
-                                        senses=['L'], 
-                                        rhs=[0.0], 
-                                        names=[f"Parada_{i+1}_{j+1}"])
+        # for i in range(n):
+        #     for j in instancia.pares_Y[i]:
+        #         idx_stop = [f"X_{i+1}{k+1}" for k in range(n) if k != i]
+        #         expr = [f"Y_{i+1}{j+1}"] + idx_stop
+        #         coefs = [1.0] + [-1.0]*len(idx_stop)
+        #         prob.linear_constraints.add(lin_expr=[[expr, coefs]], 
+        #                                     senses=['L'], 
+        #                                     rhs=[0.0], 
+        #                                     names=[f"Parada_{i+1}_{j+1}"])
+
+        # PARA MI ES AL REVEZ, ES X_ik
+        for i in range(n):
+            for j in instancia.pares_Y[i]:
+                idx_stop = [f"X_{k+1}{i+1}" for k in range(n) if k != i]
+                expr = [f"Y_{i+1}{j+1}"] + idx_stop
+                coefs = [1.0] + [-1.0]*len(idx_stop)
+                prob.linear_constraints.add(lin_expr=[[expr, coefs]], 
+                                            senses=['L'], 
+                                            rhs=[0.0], 
+                                            names=[f"Parada_{i+1}_{j+1}"])
         
         # (8) Limite de productos refrigerados por repartidor
         for i in range(n):
@@ -237,41 +249,46 @@ def agregar_restricciones(prob, instancia, version_modelo):
                                             names=[f"RefLim_{i+1}"])
             
     # Restricciones deseables 
-  
-    # 9) Clientes exclusivos atendidos por camion
-    for j in instancia.exclusivos:
-      idx_X = [f"X_{i+1}{j+1}" for i in range(n) if i != j]
-      prob.linear_constraints.add(lin_expr=[ [idx_X, [1.0]*len(idx_X)] ], senses=['E'], rhs=[1.0], names=[f"Exclusivo_{j+1}"])
+    if (deseables):
+        # 9) Clientes exclusivos atendidos por camion
+        for j in instancia.exclusivos:
+            idx_X = [f"X_{i+1}{j+1}" for i in range(n) if i != j]
+            prob.linear_constraints.add(lin_expr=[ [idx_X, [1.0]*len(idx_X)] ], 
+                                        senses=['E'], 
+                                        rhs=[1.0], 
+                                        names=[f"Exclusivo_{j+1}"])
 
-      
-    for i in range(n):
-      idxs = [f"Y_{i+1}_{j+1}" for (i2, j) in instancia.pares_Y if i2 == i]
-    if idxs:
-        # 10) Minimo de entregas en la parada i
-        prob.linear_constraints.add(
-            lin_expr=[ [idxs + [f"delta_{i+1}"], [1.0]*len(idxs) + [-4.0]] ],
-            senses=['G'], rhs=[0.0], names=[f"Min4_{i+1}"]
-        )
-        # 11) Maximo de entregas en la parada i
-        prob.linear_constraints.add(
-            lin_expr=[ [idxs + [f"delta_{i+1}"], [1.0]*len(idxs) + [-len(idxs)] ] ],
-            senses=['L'], rhs=[0.0], names=[f"MaxJ_{i+1}"]
-        )
-    else:
-        # Si J_i vacío, fuerzo delta_i = 0
-        prob.linear_constraints.add(
-            lin_expr=[ [[f"delta_{i+1}"], [1.0]] ],
-            senses=['E'], rhs=[0.0], names=[f"Delta0_{i+1}"]
-        )
-    for i in range(n):
-      idxs = [f"Y_{i+1}_{j+1}" for (i2, j) in instancia.pares_Y if i2 == i]
+        
+        for i in range(n):
+            idxs = [f"Y_{i+1}_{j+1}" for j in instancia.pares_Y[i]]
+            if idxs:
+                # 10) Minimo de entregas en la parada i
+                prob.linear_constraints.add(lin_expr=[ [idxs + [f"delta_{i+1}"], [1.0]*len(idxs) + [-4.0]] ],
+                                            senses=['G'], 
+                                            rhs=[0.0], 
+                                            names=[f"Min4_{i+1}"])
+                
+                # 11) Maximo de entregas en la parada i
+                prob.linear_constraints.add(lin_expr=[ [idxs + [f"delta_{i+1}"], [1.0]*len(idxs) + [-len(idxs)] ] ],
+                                            senses=['L'], 
+                                            rhs=[0.0], 
+                                            names=[f"MaxJ_{i+1}"])
+            else:
+                # Si J_i vacío, fuerzo delta_i = 0
+                prob.linear_constraints.add(lin_expr=[ [[f"delta_{i+1}"], [1.0]] ],
+                                            senses=['E'], 
+                                            rhs=[0.0], 
+                                            names=[f"Delta0_{i+1}"])
+            
+        # for i in range(n):
+        #   idxs = [f"Y_{i+1}_{j+1}" for (i2, j) in instancia.pares_Y if i2 == i]
          
   
 
 
-def armar_lp(prob, instancia, version):
+def armar_lp(prob, instancia, version, deseables):
     agregar_variables(prob, instancia, version)
-    agregar_restricciones(prob, instancia,version)
+    agregar_restricciones(prob, instancia,version, deseables)
     prob.objective.set_sense(prob.objective.sense.minimize)
     prob.write('recorridoMixto.lp')
 
@@ -319,7 +336,10 @@ def main():
     # Definicion del modelo
     opcion = int(input("Ingresar version de modelo (1 = inicial, 2 = completo) "))
     version_modelo = (opcion == 1)
-    armar_lp(prob,instancia, version_modelo)
+
+    restr_deseables = int(input("Agregar restricciones deseables? (1 = si, 2 = no) "))
+    deseables = (restr_deseables == 1)
+    armar_lp(prob,instancia, version_modelo, deseables)
 
     # # Resolucion del modelo
     # resolver_lp(prob)
