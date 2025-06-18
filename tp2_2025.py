@@ -82,7 +82,7 @@ def agregar_variables(prob, instancia, version_modelo):
     
     n = instancia.cant_clientes
 
-    # Xij = 1 si el camion se mueve del cliente i al cliente j / 0 cc
+    # X_ij = 1 si el camion se mueve del cliente i al cliente j / 0 cc
     nombres_Xij = [f"X_{i+1}{j+1}" for i in range(n) for j in range(n) if i != j]
     coeficientes_funcion_objetivo = [instancia.costos[i][j] for i in range(n) for j in range(n) if i != j]   
     prob.variables.add(obj = coeficientes_funcion_objetivo,
@@ -99,7 +99,7 @@ def agregar_variables(prob, instancia, version_modelo):
                        names = nombres_U)
     
     if ( not version_modelo ):
-        # Yij = 1 si el cliente j es visitado a pie desde la parada en el cliente i / 0 cc
+        # Y_ij = 1 si el cliente j es visitado a pie desde la parada en el cliente i / 0 cc
         nombres_Yij = []
         coeficientes_funcion_objetivo = []
         for i in range(n):
@@ -116,10 +116,10 @@ def agregar_variables(prob, instancia, version_modelo):
         # Variables delta_i
         nombres_delta = [f"delta_{i+1}" for i in range(n)]
         prob.variables.add(obj = [0.0]*n, 
-                        lb = [0]*n, 
-                        ub = [1]*n, 
-                        types = ['B']*n, 
-                        names = nombres_delta)
+                            lb = [0]*n, 
+                            ub = [1]*n, 
+                            types = ['B']*n, 
+                            names = nombres_delta)
 
 
 def agregar_restricciones(prob, instancia, version_modelo, deseables):
@@ -209,7 +209,7 @@ def agregar_restricciones(prob, instancia, version_modelo, deseables):
         # (6) Todo cliente es atendido
         for j in range(1, n):
             idx_X = [f"X_{i+1}{j+1}" for i in range(n) if i != j]
-            idx_Y = [f"Y_{i+1}{j+1}" for i in range(n) if i != j and j in instancia.pares_Y[i]]
+            idx_Y = [f"Y_{i+1}{j+1}" for i in range(n) if i != j and j+1 in instancia.pares_Y[i+1]]
             expr = idx_X + idx_Y
             coefs = [1.0]*len(idx_X) + [1.0]*len(idx_Y)
             prob.linear_constraints.add(lin_expr=[[expr, coefs]], 
@@ -228,22 +228,22 @@ def agregar_restricciones(prob, instancia, version_modelo, deseables):
         #                                     rhs=[0.0], 
         #                                     names=[f"Parada_{i+1}_{j+1}"])
 
-        # PARA MI ES AL REVEZ, ES X_ik
+        # PARA MI ES AL REVEZ, ES X_ki
         for i in range(n):
-            for j in instancia.pares_Y[i]:
+            for j in instancia.pares_Y[i+1]:
                 idx_stop = [f"X_{k+1}{i+1}" for k in range(n) if k != i]
-                expr = [f"Y_{i+1}{j+1}"] + idx_stop
+                expr = [f"Y_{i+1}{j}"] + idx_stop
                 coefs = [1.0] + [-1.0]*len(idx_stop)
                 prob.linear_constraints.add(lin_expr=[[expr, coefs]], 
                                             senses=['L'], 
                                             rhs=[0.0], 
-                                            names=[f"Parada_{i+1}_{j+1}"])
+                                            names=[f"Parada_{i+1}_{j}"])
         
         # (8) Limite de productos refrigerados por repartidor
         for i in range(n):
-            idxs = [f"Y_{i+1}{j+1}" for j in instancia.pares_Y[i] if (j in instancia.refrigerados)]
+            idxs = [f"Y_{i+1}{j}" for j in instancia.pares_Y[i+1] if (j in instancia.refrigerados)]
             if idxs:
-                prob.linear_constraints.add(lin_expr=[[idxs, [1.0]*len(idxs)] ], 
+                prob.linear_constraints.add(lin_expr=[ [idxs, [1.0]*len(idxs)] ], 
                                             senses=['L'], 
                                             rhs=[1.0], 
                                             names=[f"RefLim_{i+1}"])
@@ -260,7 +260,7 @@ def agregar_restricciones(prob, instancia, version_modelo, deseables):
 
         
         for i in range(n):
-            idxs = [f"Y_{i+1}_{j+1}" for j in instancia.pares_Y[i]]
+            idxs = [f"Y_{i+1}{j}" for j in instancia.pares_Y[i+1]]
             if idxs:
                 # 10) Minimo de entregas en la parada i
                 prob.linear_constraints.add(lin_expr=[ [idxs + [f"delta_{i+1}"], [1.0]*len(idxs) + [-4.0]] ],
@@ -278,13 +278,8 @@ def agregar_restricciones(prob, instancia, version_modelo, deseables):
                 prob.linear_constraints.add(lin_expr=[ [[f"delta_{i+1}"], [1.0]] ],
                                             senses=['E'], 
                                             rhs=[0.0], 
-                                            names=[f"Delta0_{i+1}"])
-            
-        # for i in range(n):
-        #   idxs = [f"Y_{i+1}_{j+1}" for (i2, j) in instancia.pares_Y if i2 == i]
-         
+                                            names=[f"Delta0_{i+1}"])     
   
-
 
 def armar_lp(prob, instancia, version, deseables):
     agregar_variables(prob, instancia, version)
