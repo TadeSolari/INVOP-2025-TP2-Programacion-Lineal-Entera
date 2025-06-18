@@ -74,31 +74,43 @@ def agregar_variables(prob, instancia):
     # Poner nombre a las variables y llenar coef_funcion_objetivo
 
     # Formulacion Miller, Tucker and Zemlin
+    
+    n = instancia.cant_clientes
 
     # Xij = 1 si el camion se mueve del cliente i al cliente j / 0 cc
-    n = instancia.cant_clientes
     nombres_Xij = [f"X_{i+1}{j+1}" for i in range(n) for j in range(n) if i != j]
-    coeficientes_funcion_objetivo = [instancia.costos[i][j] for i in range(n) for j in range(n) if i != j]
-   
-    prob.variables.add(obj = coeficientes_funcion_objetivo, 
-                    #    lb = [0]*len(nombres_Xij), 
-                    #    ub = [1]*len(nombres_Xij), 
-                       types= ['B']*len(nombres_Xij), 
-                       names=nombres_Xij)
+    coeficientes_funcion_objetivo = [instancia.costos[i][j] for i in range(n) for j in range(n) if i != j]   
+    prob.variables.add(obj = coeficientes_funcion_objetivo,
+                       types = ['B']*len(nombres_Xij), 
+                       names = nombres_Xij)
     
+    
+    # Yij = 1 si el cliente j es visitado a pie desde la parada en el cliente i / 0 cc
+    nombres_Yij = [f"Y_{i+1}{j+1}" for i in range(n) for j in range(n) if (i != j and instancia.distancias[i][j] <= instancia.d_max)]
+    coeficientes_funcion_objetivo = [instancia.costo_repartidor for i in range(n) for j in range(n) if (i != j and instancia.distancias[i][j] <= instancia.d_max)]
+    prob.variables.add(obj = coeficientes_funcion_objetivo,
+                       types = ['B'] * len(nombres_Yij), 
+                       names = nombres_Yij)
+
+
     # U_i = orden en que se visita la ciudad i. (i = 2 hasta n)
-    # Declaro al cliente 1 como el primero en visitarse => U_1 = 1
+    # Declaramos al cliente 1 como el primero en visitarse => U_1 = 0
     nombres_U = [f"U_{i+1}" for i in range(n)]
-    prob.variables.add(lb = [1] + [2]*(n - 1), 
-                       ub = [1] + [n]*(n - 1), 
+    prob.variables.add(lb = [0] + [1]*(n - 1), 
+                       ub = [0] + [n-1]*(n - 1), 
                        types= ['I'] * n, 
-                       names=nombres_U)
+                       names = nombres_U)
+    
     # Variables delta_i
     nombres_delta = [f"delta_{i+1}" for i in range(n)]
-    prob.variables.add(obj=[0.0]*n, lb=[0]*n, ub=[1]*n, types=['B']*n, names=nombres_delta)
+    prob.variables.add(obj = [0.0]*n, 
+                       lb = [0]*n, 
+                       ub = [1]*n, 
+                       types = ['B']*n, 
+                       names = nombres_delta)
 
 
-def agregar_restricciones(prob, instancia):
+def agregar_restricciones(prob, instancia, version_inicial):
     # Agregar las restricciones ax <= (>= ==) b:
 	# funcion 'add' de 'linear_constraints' con parametros:
 	# lin_expr: lista de listas de [ind,val] de a
@@ -111,91 +123,93 @@ def agregar_restricciones(prob, instancia):
     # agreguemos una unica restriccion, tenemos que hacerlo como una lista de un unico
     # elemento.
 
-    n = instancia.cant_clientes
-    valores = [1] * (n - 1) # -1 pq no contamos los repetidos
 
-    for i in range(n):
-        index = [f"X_{i+1}{j+1}" for j in range(n) if i!=j]
-        index_inv = [f"X_{j+1}{i+1}" for j in range(n) if i!=j]
-        fila = [index, valores]
-        fila_inv = [index_inv, valores]
+    # Restricciones Metodologia inicial
+    if (version_inicial):
+        n = instancia.cant_clientes
+        valores = [1] * (n - 1) # -1 pq no contamos los repetidos
         
+        # El camion entra y sale una vez de cada cliente
+        for i in range(n):
+            index = [f"X_{i+1}{j+1}" for j in range(n) if i!=j]
+            index_inv = [f"X_{j+1}{i+1}" for j in range(n) if i!=j]
+            fila = [index, valores]
+            fila_inv = [index_inv, valores]
+            
+            # (1) de toda cliente hay que salir
+            prob.linear_constraints.add(lin_expr=[fila],
+                                        senses=['E'], 
+                                        rhs=[1],
+                                        names = [f'Salgo_de_cliente{i+1}']) 
+            
+            # (2) a todo cliente se debe llegar
+            prob.linear_constraints.add(lin_expr=[fila_inv],
+                                        senses=['E'], 
+                                        rhs=[1],
+                                        names = [f'Llego_a_cliente{i+1}']) 
+        
+        # (3) Eliminar subtours
+        for i in range(1, n):
+            for j in range(1,n):
+                if i!=j:
+                    index = [f"U_{i+1}", f"U_{j+1}", f"X_{i+1}{j+1}"]
+                    valores = [1, -1, n-1]
+                    fila = [index, valores]
 
-        # de toda ciudad tengo que salir
-        prob.linear_constraints.add(lin_expr=[fila],
-                                    senses=['E'], 
-                                    rhs=[1],
-                                    names = [f'Salgo_de_cliente{i+1}']) 
-        
-        # a toda ciudad se debe llegar
-        prob.linear_constraints.add(lin_expr=[fila_inv],
-                                    senses=['E'], 
-                                    rhs=[1],
-                                    names = [f'Llego_a_cliente{i+1}']) 
-        
-    # continuidad
-    for i in range(1, n):
-        for j in range(1,n):
-            if i!=j:
-                index = [f"U_{i+1}", f"U_{j+1}", f"X_{i+1}{j+1}"]
-                valores = [1, -1, n]
-                fila = [index, valores]
-
-                prob.linear_constraints.add(lin_expr=[fila],
-                                            senses=['L'], 
-                                            rhs=[n-1],
-                                            names = [f'Continuidad_desde_{i+1}']) 
-                
+                    prob.linear_constraints.add(lin_expr=[fila],
+                                                senses=['L'], 
+                                                rhs=[n-2],
+                                                names = [f'Orden_desde_{i+1}_{j+1}']) 
+    else:
     # Restricciones Modelo Completo
-
-    if n > 1:
+        # if n > 1:
         # 1) El camion sale desde el nodo 0:
         idx_out = [f"X_1{j+1}" for j in range(1, n)]
         prob.linear_constraints.add(lin_expr=[[idx_out, [1.0]*len(idx_out)]], senses=['E'], rhs=[1.0], names=['Salida_dep'])
-      
+    
         # 2) El camion vuelve al nodo 0:
         idx_in = [f"X_{i+1}1" for i in range(1, n)]
         prob.linear_constraints.add(lin_expr=[[idx_in, [1.0]*len(idx_in)]], senses=['E'], rhs=[1.0], names=['Entrada_dep'])
 
-    # 3) Nodo 0 tiene pos 0 al inicio
-    prob.linear_constraints.add(lin_expr=[[[f"U_1"], [1.0]]], senses=['E'], rhs=[0.0], names=['U0'])
-  
-    # 4) El camión entra y sale una vez de cada casa de su recorrido (Esta balanceado)
-    for i in range(1, n):
-        idx_out = [f"X_{i+1}{j+1}" for j in range(n) if j != i]
-        idx_in = [f"X_{j+1}{i+1}" for j in range(n) if j != i]
-        expr = idx_out + idx_in
-        coefs = [1.0]*len(idx_out) + [-1.0]*len(idx_in)
-        prob.linear_constraints.add(lin_expr=[ [expr, coefs] ], senses=['E'], rhs=[0.0], names=[f"Balance_{i+1}"])
+        # 3) Nodo 0 tiene pos 0 al inicio
+        prob.linear_constraints.add(lin_expr=[[[f"U_1"], [1.0]]], senses=['E'], rhs=[0.0], names=['U0'])
+    
+        # 4) El camión entra y sale una vez de cada casa de su recorrido (Esta balanceado)
+        for i in range(1, n):
+            idx_out = [f"X_{i+1}{j+1}" for j in range(n) if j != i]
+            idx_in = [f"X_{j+1}{i+1}" for j in range(n) if j != i]
+            expr = idx_out + idx_in
+            coefs = [1.0]*len(idx_out) + [-1.0]*len(idx_in)
+            prob.linear_constraints.add(lin_expr=[ [expr, coefs] ], senses=['E'], rhs=[0.0], names=[f"Balance_{i+1}"])
 
-    # 5) Eliminar subtours (formulacion MTZ)
-    for i in range(1, n):
+        # 5) Eliminar subtours (formulacion MTZ)
+        for i in range(1, n):
+            for j in range(1, n):
+                if i != j:
+                    prob.linear_constraints.add(lin_expr=[ [[f"U_{i+1}", f"U_{j+1}", f"X_{i+1}{j+1}"], [1.0, -1.0, n]] ],
+                                                senses=['L'], rhs=[n-1], names=[f"Subtour_{i+1}_{j+1}"])
+                
+        # 6) Todo cliente es atendido
         for j in range(1, n):
-            if i != j:
-                prob.linear_constraints.add(lin_expr=[ [[f"U_{i+1}", f"U_{j+1}", f"X_{i+1}{j+1}"], [1.0, -1.0, n]] ],
-                                            senses=['L'], rhs=[n-1], names=[f"Subtour_{i+1}_{j+1}"])
-              
-    # 6) Todo cliente es atendido
-    for j in range(1, n):
-        idx_X = [f"X_{i+1}{j+1}" for i in range(n) if i != j]
-        idx_Y = [f"Y_{i+1}_{j+1}" for (i2, j2) in instancia.pares_Y if j2 == j]
-        expr = idx_X + idx_Y
-        coefs = [1.0]*len(idx_X) + [1.0]*len(idx_Y)
-        prob.linear_constraints.add(lin_expr=[[expr, coefs]], senses=['E'], rhs=[1.0], names=[f"Atiendo_{j+1}"])
-      
-    # 7) Si es visitado a pie, el camión para cerca:
-    for (i, j) in instancia.pares_Y:
-        idx_stop = [f"X_{i+1}{k+1}" for k in range(n) if k != i]
-        expr = [f"Y_{i+1}_{j+1}"] + idx_stop
-        coefs = [1.0] + [-1.0]*len(idx_stop)
-        prob.linear_constraints.add(lin_expr=[[expr, coefs]], senses=['L'], rhs=[0.0], names=[f"Parada_{i+1}_{j+1}"])
-      
-    # 8) Limite de productos refrigerados por repartidor
-    for i in range(n):
-        idxs = [f"Y_{i+1}_{j+1}" for (i2, j) in instancia.pares_Y if i2 == i and j in instancia.refrigerados]
-        if idxs:
-            prob.linear_constraints.add(lin_expr=[[idxs, [1.0]*len(idxs)] ], senses=['L'], rhs=[1.0], names=[f"RefLim_{i+1}"])
-          
+            idx_X = [f"X_{i+1}{j+1}" for i in range(n) if i != j]
+            idx_Y = [f"Y_{i+1}_{j+1}" for (i2, j2) in instancia.pares_Y if j2 == j]
+            expr = idx_X + idx_Y
+            coefs = [1.0]*len(idx_X) + [1.0]*len(idx_Y)
+            prob.linear_constraints.add(lin_expr=[[expr, coefs]], senses=['E'], rhs=[1.0], names=[f"Atiendo_{j+1}"])
+        
+        # 7) Si es visitado a pie, el camión para cerca:
+        for (i, j) in instancia.pares_Y:
+            idx_stop = [f"X_{i+1}{k+1}" for k in range(n) if k != i]
+            expr = [f"Y_{i+1}_{j+1}"] + idx_stop
+            coefs = [1.0] + [-1.0]*len(idx_stop)
+            prob.linear_constraints.add(lin_expr=[[expr, coefs]], senses=['L'], rhs=[0.0], names=[f"Parada_{i+1}_{j+1}"])
+        
+        # 8) Limite de productos refrigerados por repartidor
+        for i in range(n):
+            idxs = [f"Y_{i+1}_{j+1}" for (i2, j) in instancia.pares_Y if i2 == i and j in instancia.refrigerados]
+            if idxs:
+                prob.linear_constraints.add(lin_expr=[[idxs, [1.0]*len(idxs)] ], senses=['L'], rhs=[1.0], names=[f"RefLim_{i+1}"])
+            
     # Restricciones deseables 
   
     # 9) Clientes exclusivos atendidos por camion
@@ -229,9 +243,9 @@ def agregar_restricciones(prob, instancia):
   
 
 
-def armar_lp(prob, instancia):
+def armar_lp(prob, instancia, version):
     agregar_variables(prob, instancia)
-    agregar_restricciones(prob, instancia)
+    agregar_restricciones(prob, instancia,version)
     prob.objective.set_sense(prob.objective.sense.minimize)
     prob.write('recorridoMixto.lp')
 
@@ -277,7 +291,7 @@ def main():
     prob = cplex.Cplex()
     
     # Definicion del modelo
-    armar_lp(prob,instancia)
+    armar_lp(prob,instancia, True)
 
     # # Resolucion del modelo
     # resolver_lp(prob)
