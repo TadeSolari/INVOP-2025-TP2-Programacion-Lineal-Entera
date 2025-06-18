@@ -1,14 +1,15 @@
 import sys
-#importamos el modulo cplex
+# importamos el modulo cplex
 import cplex
 
-TOLERANCE =10e-6 
+TOLERANCE = 1e-6
 
 class InstanciaRecorridoMixto:
     def __init__(self):
         self.cant_clientes = 0
         self.costo_repartidor = 0
         self.d_max = 0
+        # almacenar índices 0-based
         self.refrigerados = []
         self.exclusivos = []
         self.distancias = []        
@@ -53,14 +54,13 @@ class InstanciaRecorridoMixto:
         # cerramos el archivo
         f.close()
 
+
 def cargar_instancia():
-    # El 1er parametro es el nombre del archivo de entrada
     nombre_archivo = sys.argv[1].strip()
-    # Crea la instancia vacia
     instancia = InstanciaRecorridoMixto()
-    # Llena la instancia con los datos del archivo de entrada 
     instancia.leer_datos(nombre_archivo)
     return instancia
+
 
 def agregar_variables(prob, instancia):
     # Definir y agregar las variables:
@@ -79,8 +79,7 @@ def agregar_variables(prob, instancia):
     n = instancia.cant_clientes
     nombres_Xij = [f"X_{i+1}{j+1}" for i in range(n) for j in range(n) if i != j]
     coeficientes_funcion_objetivo = [instancia.costos[i][j] for i in range(n) for j in range(n) if i != j]
-    
-    # Agregar las variables
+   
     prob.variables.add(obj = coeficientes_funcion_objetivo, 
                     #    lb = [0]*len(nombres_Xij), 
                     #    ub = [1]*len(nombres_Xij), 
@@ -94,6 +93,10 @@ def agregar_variables(prob, instancia):
                        ub = [1] + [n]*(n - 1), 
                        types= ['I'] * n, 
                        names=nombres_U)
+    # Variables delta_i
+    nombres_delta = [f"delta_{i+1}" for i in range(n)]
+    prob.variables.add(obj=[0.0]*n, lb=[0]*n, ub=[1]*n, types=['B']*n, names=nombres_delta)
+
 
 def agregar_restricciones(prob, instancia):
     # Agregar las restricciones ax <= (>= ==) b:
@@ -143,46 +146,127 @@ def agregar_restricciones(prob, instancia):
                                             rhs=[n-1],
                                             names = [f'Continuidad_desde_{i+1}']) 
                 
-            
+    # Restricciones Modelo Completo
+
+    if n > 1:
+        # 1) El camion sale desde el nodo 0:
+        idx_out = [f"X_1{j+1}" for j in range(1, n)]
+        prob.linear_constraints.add(lin_expr=[[idx_out, [1.0]*len(idx_out)]], senses=['E'], rhs=[1.0], names=['Salida_dep'])
+      
+        # 2) El camion vuelve al nodo 0:
+        idx_in = [f"X_{i+1}1" for i in range(1, n)]
+        prob.linear_constraints.add(lin_expr=[[idx_in, [1.0]*len(idx_in)]], senses=['E'], rhs=[1.0], names=['Entrada_dep'])
+
+    # 3) Nodo 0 tiene pos 0 al inicio
+    prob.linear_constraints.add(lin_expr=[[[f"U_1"], [1.0]]], senses=['E'], rhs=[0.0], names=['U0'])
+  
+    # 4) El camión entra y sale una vez de cada casa de su recorrido (Esta balanceado)
+    for i in range(1, n):
+        idx_out = [f"X_{i+1}{j+1}" for j in range(n) if j != i]
+        idx_in = [f"X_{j+1}{i+1}" for j in range(n) if j != i]
+        expr = idx_out + idx_in
+        coefs = [1.0]*len(idx_out) + [-1.0]*len(idx_in)
+        prob.linear_constraints.add(lin_expr=[ [expr, coefs] ], senses=['E'], rhs=[0.0], names=[f"Balance_{i+1}"])
+
+    # 5) Eliminar subtours (formulacion MTZ)
+    for i in range(1, n):
+        for j in range(1, n):
+            if i != j:
+                prob.linear_constraints.add(lin_expr=[ [[f"U_{i+1}", f"U_{j+1}", f"X_{i+1}{j+1}"], [1.0, -1.0, n]] ],
+                                            senses=['L'], rhs=[n-1], names=[f"Subtour_{i+1}_{j+1}"])
+              
+    # 6) Todo cliente es atendido
+    for j in range(1, n):
+        idx_X = [f"X_{i+1}{j+1}" for i in range(n) if i != j]
+        idx_Y = [f"Y_{i+1}_{j+1}" for (i2, j2) in instancia.pares_Y if j2 == j]
+        expr = idx_X + idx_Y
+        coefs = [1.0]*len(idx_X) + [1.0]*len(idx_Y)
+        prob.linear_constraints.add(lin_expr=[[expr, coefs]], senses=['E'], rhs=[1.0], names=[f"Atiendo_{j+1}"])
+      
+    # 7) Si es visitado a pie, el camión para cerca:
+    for (i, j) in instancia.pares_Y:
+        idx_stop = [f"X_{i+1}{k+1}" for k in range(n) if k != i]
+        expr = [f"Y_{i+1}_{j+1}"] + idx_stop
+        coefs = [1.0] + [-1.0]*len(idx_stop)
+        prob.linear_constraints.add(lin_expr=[[expr, coefs]], senses=['L'], rhs=[0.0], names=[f"Parada_{i+1}_{j+1}"])
+      
+    # 8) Limite de productos refrigerados por repartidor
+    for i in range(n):
+        idxs = [f"Y_{i+1}_{j+1}" for (i2, j) in instancia.pares_Y if i2 == i and j in instancia.refrigerados]
+        if idxs:
+            prob.linear_constraints.add(lin_expr=[[idxs, [1.0]*len(idxs)] ], senses=['L'], rhs=[1.0], names=[f"RefLim_{i+1}"])
+          
+    # Restricciones deseables 
+  
+    # 9) Clientes exclusivos atendidos por camion
+    for j in instancia.exclusivos:
+      idx_X = [f"X_{i+1}{j+1}" for i in range(n) if i != j]
+      prob.linear_constraints.add(lin_expr=[ [idx_X, [1.0]*len(idx_X)] ], senses=['E'], rhs=[1.0], names=[f"Exclusivo_{j+1}"])
+
+      
+    for i in range(n):
+      idxs = [f"Y_{i+1}_{j+1}" for (i2, j) in instancia.pares_Y if i2 == i]
+    if idxs:
+        # 10) Minimo de entregas en la parada i
+        prob.linear_constraints.add(
+            lin_expr=[ [idxs + [f"delta_{i+1}"], [1.0]*len(idxs) + [-4.0]] ],
+            senses=['G'], rhs=[0.0], names=[f"Min4_{i+1}"]
+        )
+        # 11) Maximo de entregas en la parada i
+        prob.linear_constraints.add(
+            lin_expr=[ [idxs + [f"delta_{i+1}"], [1.0]*len(idxs) + [-len(idxs)] ] ],
+            senses=['L'], rhs=[0.0], names=[f"MaxJ_{i+1}"]
+        )
+    else:
+        # Si J_i vacío, fuerzo delta_i = 0
+        prob.linear_constraints.add(
+            lin_expr=[ [[f"delta_{i+1}"], [1.0]] ],
+            senses=['E'], rhs=[0.0], names=[f"Delta0_{i+1}"]
+        )
+    for i in range(n):
+      idxs = [f"Y_{i+1}_{j+1}" for (i2, j) in instancia.pares_Y if i2 == i]
+         
+  
+
 
 def armar_lp(prob, instancia):
-
-    # Agregar las variables
     agregar_variables(prob, instancia)
-    # Agregar las restricciones 
     agregar_restricciones(prob, instancia)
-
-    # Setear el sentido del problema
     prob.objective.set_sense(prob.objective.sense.minimize)
-
-    # Escribir el lp a archivo
     prob.write('recorridoMixto.lp')
 
+
 def resolver_lp(prob):
-    
     # Definir los parametros del solver
     #prob.parameters.mip.....
-       
-    # Resolver el lp
+    # Resolver LP
     prob.solve()
 
-def mostrar_solucion(prob,instancia):
-    
+
+def mostrar_solucion(prob, instancia):
+      
     # Obtener informacion de la solucion a traves de 'solution'
     
     # Tomar el estado de la resolucion
-    status = prob.solution.get_status_string(status_code = prob.solution.get_status())
-    
+    status = prob.solution.get_status_string(status_code=prob.solution.get_status())
+
     # Tomar el valor del funcional
     valor_obj = prob.solution.get_objective_value()
-    
-    print('Funcion objetivo: ',valor_obj,'(' + str(status) + ')')
-    
-    # Tomar los valores de las variables
-    x  = prob.solution.get_values()
+    print('Funcion objetivo: ', valor_obj, '(', status, ')')
+  
+    n = instancia.cant_clientes
+    print("Paradas de camión:")
+    for i in range(n):
+        val_in = sum(prob.solution.get_values(f"X_{j+1}{i+1}") for j in range(n) if j!=i)
+        if val_in > TOLERANCE:
+            print(f"  Cliente {i+1}")
+    print("Asignaciones a pie (i -> j):")
+    for (i, j) in instancia.pares_Y:
+        val = prob.solution.get_values(f"Y_{i+1}_{j+1}")
+        if val > 0.5:
+            print(f"  Desde parada {i+1} atiende a cliente {j+1}")
 
-    # Mostrar las variables con valor positivo (mayor que una tolerancia)
-    # ..... 
+
 
 def main():
     
