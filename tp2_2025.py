@@ -24,7 +24,7 @@ class InstanciaRecorridoMixto:
         self.cant_clientes = int(f.readline())
 
         # Creamos el conjunto J_i
-        self.pares_Y = {i: set() for i in range(self.cant_clientes)}
+        self.pares_Y = {i+1 : set() for i in range(self.cant_clientes)}
 
         # leemos el costo por pedido del repartidor
         self.costo_repartidor = int(f.readline())
@@ -107,7 +107,7 @@ def agregar_variables(prob, instancia, version_modelo):
                 if (i != j and instancia.distancias[i][j] <= instancia.d_max):
                     nombres_Yij.append(f"Y_{i+1}{j+1}")
                     coeficientes_funcion_objetivo.append(instancia.costo_repartidor)
-                    instancia.pares_Y[i].add(j)
+                    instancia.pares_Y[i+1].add(j+1)
 
         prob.variables.add(obj = coeficientes_funcion_objetivo,
                             types = ['B'] * len(nombres_Yij), 
