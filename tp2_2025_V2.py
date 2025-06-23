@@ -259,8 +259,40 @@ def armar_lp(prob, instancia, version, deseables):
 
 
 def resolver_lp(prob):
-    # Definir los parametros del solver
-    #prob.parameters.mip.....
+    # https://www.ibm.com/docs/en/cofz/12.10.0?topic=cplex-list-parameters
+    
+    # Este siempre activo, la otra strategy no la vimos
+    # prob.parameters.mip.strategy.search.set(1) # Traditional branch-and-cut search
+
+    # PREPROCESAMIENTO ACTIVO
+    # prob.parameters.preprocessing.presolve.set(1) #
+
+    # ESTRATEGIA DE SELECCION DE NODOS
+    # prob.parameters.mip.strategy.nodeselect.set(0) # Depth-first search
+    # prob.parameters.mip.strategy.nodeselect.set(1) # Best-bound search
+
+    # HEURISTICAS
+    # prob.parameters.mip.strategy.heuristicfreq.set(10) # Heuristicas periodicas cada 10 nodos
+    # prob.parameters.mip.strategy.heuristiceffort.set(0) # 0 = Heuristicas desactivadas
+
+    # TODOS LOS CORTES DESACTIVADOS
+    # prob.parameters.mip.cuts.cliques.set(-1)
+    # prob.parameters.mip.cuts.covers.set(-1)
+    # prob.parameters.mip.cuts.flowcovers.set(-1)
+    # prob.parameters.mip.cuts.gomory.set(-1)
+    # prob.parameters.mip.cuts.mircut.set(-1)
+    # prob.parameters.mip.cuts.pathcut.set(-1)
+    # prob.parameters.mip.cuts.implied.set(-1)
+    # prob.parameters.mip.cuts.liftproj.set(-1)
+    # prob.parameters.mip.cuts.mcfcut.set(-1)
+    # prob.parameters.mip.cuts.zerohalfcut.set(-1)
+    # prob.parameters.mip.cuts.disjunctive.set(-1)
+    # prob.parameters.mip.cuts.bqp.set(-1)
+
+    # TIEMPO LIMITE
+    # prob.parameters.mip.tolerances.mipgap.set(0.03) # por gap (3%)
+    # prob.parameters.timelimit.set(300) # por tiempo (3 minutos)
+
     # Resolver LP
     prob.solve()
 
@@ -308,11 +340,11 @@ def mostrar_solucion(prob, instancia):
             if val > 0.5:
                 print(f"  Desde parada {i} atiende a cliente {j}")
 
-    nombres = prob.variables.get_names()
-    valor_variables = prob.solution.get_values()
+    # nombres = prob.variables.get_names()
+    # valor_variables = prob.solution.get_values()
 
-    for nom, val in zip(nombres, valor_variables):
-        print(f"{nom} = {val}")
+    # for nom, val in zip(nombres, valor_variables):
+    #     print(f"{nom} = {val}")
 
 
 
