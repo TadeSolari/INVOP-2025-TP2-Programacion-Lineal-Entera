@@ -166,11 +166,7 @@ def agregar_restricciones(prob, instancia, version_modelo, deseables):
                                     rhs=[1.0], 
                                     names=['Entrada_al_deposito'])
 
-        # 3) Nodo 0 tiene pos 0 al inicio
-        # YA ESTABA EN LAS COTAS
-        # prob.linear_constraints.add(lin_expr=[[[f"U_1"], [1.0]]], senses=['E'], rhs=[0.0], names=['U0'])
-    
-        # (4) El camión entra y sale una vez de cada casa de su recorrido (Flujo balanceado)
+        # (3) El camión entra y sale una vez de cada casa de su recorrido (Flujo balanceado)
         for i in range(2, n+1):
             idx_out = [f"X_{i}_{j}" for j in range(1, n+1) if j != i]
             idx_in = [f"X_{j}_{i}" for j in range(1, n+1) if j != i]
@@ -182,7 +178,7 @@ def agregar_restricciones(prob, instancia, version_modelo, deseables):
                                         rhs=[0.0], 
                                         names=[f"Balance_{i}_a"])
 
-        # (5) Eliminar subtours (formulacion MTZ)
+        # (4) Eliminar subtours (formulacion MTZ)
         for i in range(2, n+1):
             for j in range(2, n+1):
                 if i != j:
@@ -191,7 +187,7 @@ def agregar_restricciones(prob, instancia, version_modelo, deseables):
                                                 rhs=[n-2], 
                                                 names=[f"Subtour_{i}_{j}"])
                 
-        # (6) Todo cliente es atendido
+        # (5) Todo cliente es atendido
         for j in range(2, n+1):
             idx_X = [f"X_{i}_{j}" for i in range(1, n+1) if i != j]
             idx_Y = [f"Y_{i}_{j}" for i in range(2, n+1) if i != j and j in instancia.pares_Y[i]]
@@ -202,18 +198,7 @@ def agregar_restricciones(prob, instancia, version_modelo, deseables):
                                         rhs=[1.0], 
                                         names=[f"Atiendo_{j}"])
         
-        # (7) Si es visitado a pie, el camión para cerca:
-        # for i in range(n):
-        #     for j in instancia.pares_Y[i]:
-        #         idx_stop = [f"X_{i+1}{k+1}" for k in range(n) if k != i]
-        #         expr = [f"Y_{i+1}{j+1}"] + idx_stop
-        #         coefs = [1.0] + [-1.0]*len(idx_stop)
-        #         prob.linear_constraints.add(lin_expr=[[expr, coefs]], 
-        #                                     senses=['L'], 
-        #                                     rhs=[0.0], 
-        #                                     names=[f"Parada_{i+1}_{j+1}"])
-
-        # PARA MI ES AL REVEZ, ES X_ki
+        # (6) Si es visitado a pie, el camión para cerca:
         for i in range(2, n+1):
             for j in instancia.pares_Y[i]:
                 idx_stop = [f"X_{k}_{i}" for k in range(1, n+1) if k != i]
@@ -224,7 +209,7 @@ def agregar_restricciones(prob, instancia, version_modelo, deseables):
                                             rhs=[0.0], 
                                             names=[f"Parada_{i}_{j}"])
         
-        # (8) Limite de productos refrigerados por repartidor
+        # (7) Limite de productos refrigerados por repartidor
         for i in range(2, n+1):
             idxs = [f"Y_{i}_{j}" for j in instancia.pares_Y[i] if (j in instancia.refrigerados)]
             if idxs:
@@ -235,7 +220,7 @@ def agregar_restricciones(prob, instancia, version_modelo, deseables):
             
     # Restricciones deseables 
     if (deseables):
-        # (9) Clientes exclusivos atendidos por camion
+        # (8) Clientes exclusivos atendidos por camion
         for j in instancia.exclusivos:
             idx_X = [f"X_{i}_{j}" for i in range(1, n+1) if i != j]
             prob.linear_constraints.add(lin_expr=[ [idx_X, [1.0]*len(idx_X)] ], 
@@ -247,13 +232,13 @@ def agregar_restricciones(prob, instancia, version_modelo, deseables):
         for i in range(2, n+1):
             idxs = [f"Y_{i}_{j}" for j in instancia.pares_Y[i]]
             if idxs:
-                # (10) Minimo de entregas en la parada i
+                # (9) Minimo de entregas en la parada i
                 prob.linear_constraints.add(lin_expr=[ [idxs + [f"delta_{i}"], [1.0]*len(idxs) + [-4.0]] ],
                                             senses=['G'], 
                                             rhs=[0.0], 
                                             names=[f"Min4_{i}"])
                 
-                # (11) Maximo de entregas en la parada i
+                # (10) Maximo de entregas en la parada i
                 prob.linear_constraints.add(lin_expr=[ [idxs + [f"delta_{i}"], [1.0]*len(idxs) + [-len(idxs)] ] ],
                                             senses=['L'], 
                                             rhs=[0.0], 
