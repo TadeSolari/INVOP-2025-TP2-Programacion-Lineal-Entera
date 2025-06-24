@@ -12,7 +12,7 @@ with open("salida.txt", "w") as f:
     d_max = input("Distancia máxima: ")
     f.write(d_max + "\n")
 
-    clientes = list(range(2, cant_clientes + 1))
+    clientes = list(range(2, int(cant_clientes) + 1))
 
     # 10% de nodos refrigerados 
     num_refrigerados = max(1, math.ceil(0.10 * len(clientes))) if len(clientes) > 0 else 0
