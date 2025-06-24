@@ -10,19 +10,21 @@ with open("salida.txt", "w") as f:
     f.write(costo_repartidor + "\n")
     d_max = input("Distancia máxima: ")
     f.write(d_max + "\n")
+    # 10% de nodos refrigerados 
+    num_refrigerados = max(1, math.ceil(0.10 * len(clientes))) if len(clientes) > 0 else 0
+    refrigerados = set(np.random.choice(clientes, size=num_refrigerados, replace=False))
 
-    cantidad_refrigerados = input("Cantidad_refrigerados: ")
-    f.write(cantidad_refrigerados + "\n")
+    # 15% de nodos exclusivos
+    num_exclusivos = max(1, math.ceil(0.15 * len(clientes))) if len(clientes) > 0 else 0
+    exclusivos = set(np.random.choice(clientes, size=num_exclusivos, replace=False))
 
-    for i in range(int(cantidad_refrigerados)):
-        dato = input(f"Refrigerado nro {i + 1}: ")
-        f.write(dato + "\n")
+    f.write(str(len(refrigerados)) + "\n")
+    for nodo in sorted(refrigerados):
+        f.write(str(nodo) + "\n")
 
-    cantidad_exclusivos = input("Cantidad_exclusivos: ")
-    f.write(cantidad_exclusivos + "\n")
-    for i in range(int(cantidad_exclusivos)):
-        dato = input(f"Exclusivo nro {i + 1}: ")
-        f.write(dato + "\n")
+    f.write(str(len(exclusivos)) + "\n")
+    for nodo in sorted(exclusivos):
+        f.write(str(nodo) + "\n")
 
     # supongo grilla de 100x100 y los ubico aleatoriamente
     def generador_distancias_costos(cant_clientes, ancho=100, alto=100):
