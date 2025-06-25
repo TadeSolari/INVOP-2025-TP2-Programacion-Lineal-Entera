@@ -291,7 +291,7 @@ def resolver_lp(prob):
 
     # TIEMPO LIMITE
     # prob.parameters.mip.tolerances.mipgap.set(0.03) # por gap (3%)
-    # prob.parameters.timelimit.set(300) # por tiempo (3 minutos)
+    prob.parameters.timelimit.set(1500) # por tiempo (15 minutos)
 
     # Resolver LP
     prob.solve()
