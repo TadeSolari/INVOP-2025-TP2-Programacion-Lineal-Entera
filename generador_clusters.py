@@ -19,7 +19,7 @@ centros = np.array([[0, 0], [20, 0], [10, 20]])
 puntos = []
 labels = []
 for i, (centro, n) in enumerate(zip(centros, puntos_por_cluster)):
-    cluster = centro + np.random.randint(-2, 3, size=(n, 2))  # Rango reducido para formar clúster
+    cluster = centro + np.random.randint(-3, 4, size=(n, 2))  # Rango reducido para formar clúster
     puntos.append(cluster)
     labels += [i] * n
 
@@ -30,35 +30,14 @@ labels = np.array(labels)
 distancias = cdist(puntos, puntos)
 distancias = np.rint(distancias).astype(int)  # Redondeo a enteros
 
-
-#%%
-# Graficar scatterplot
-plt.figure(figsize=(8, 6))
-colores = ['red', 'green', 'blue']
-for i in range(3):
-    cluster_pts = puntos[labels == i]
-    plt.scatter(cluster_pts[:, 0], cluster_pts[:, 1], color=colores[i], label=f'Cluster {i+1}')
-
-for i, (x, y) in enumerate(puntos):
-    plt.text(x + 0.3, y + 0.3, str(i+1), fontsize=9)  # Número del punto
-
-plt.title("Clientes en 3 clusters")
-plt.xlabel("Distancia en X")
-plt.ylabel("Distancia en Y")
-plt.grid(True)
-plt.legend()
-plt.axis('equal')
-plt.show()
-
-#%%
 # Escribir archivo de salida
 costo_repartidor = input("Costo por repartidor: ")
-d_max = input("Distancia máxima (d_max): ")
+d_max =  input("Distancia máxima (d_max): ")
 
 n = len(puntos)
 clientes = list(range(2, int(n) + 1))
 
-with open("archivo.txt", "w") as f:
+with open(f"cluster.txt", "w") as f:
     f.write(str(n) + "\n")  # Cantidad de puntos
     f.write(str(costo_repartidor) + "\n")
     f.write(str(d_max) + "\n")
@@ -93,4 +72,23 @@ with open("archivo.txt", "w") as f:
 
 print(f"Archivo de salida generado correctamente con {n} puntos: archivo.txt")
 
-# %%
+
+"""
+# Graficar scatterplot
+plt.figure(figsize=(8, 6))
+colores = ['red', 'green', 'blue']
+for i in range(3):
+    cluster_pts = puntos[labels == i]
+    plt.scatter(cluster_pts[:, 0], cluster_pts[:, 1], color=colores[i], label=f'Cluster {i+1}')
+
+for i, (x, y) in enumerate(puntos):
+    plt.text(x + 0.3, y + 0.3, str(i+1), fontsize=9)  # Número del punto
+
+plt.title("Clientes en 3 clusters")
+plt.xlabel("Distancia en X")
+plt.ylabel("Distancia en Y")
+plt.grid(True)
+plt.legend()
+plt.axis('equal')
+plt.show()
+"""
