@@ -30,7 +30,7 @@ labels = np.array(labels)
 distancias = cdist(puntos, puntos)
 distancias = np.rint(distancias).astype(int)  # Redondeo a enteros
 
-
+"""
 #%%
 # Graficar scatterplot
 plt.figure(figsize=(8, 6))
@@ -49,6 +49,7 @@ plt.grid(True)
 plt.legend()
 plt.axis('equal')
 plt.show()
+"""
 
 #%%
 # Escribir archivo de salida
