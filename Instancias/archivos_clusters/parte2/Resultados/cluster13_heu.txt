@@ -1,0 +1,71 @@
+ 2365238 1538535      186.6150    82      244.0000      171.4641 13669352   29.73%
+ 2372659 1544542      202.9118    53      244.0000      171.4771 13702551   29.72%
+ 2379995 1551920      191.0211    77      244.0000      171.4886 13747488   29.72%
+ 2387579 1556893      190.9246    77      244.0000      171.5019 13779121   29.71%
+ 2394544 1564298      195.3100    67      244.0000      171.5148 13821831   29.71%
+ 2401903 1570106      191.8942    93      244.0000      171.5211 13855633   29.70%
+Elapsed time = 891.77 sec. (443764.31 ticks, tree = 1924.41 MB, solutions = 52)
+
+GUB cover cuts applied:  81
+Clique cuts applied:  29
+Cover cuts applied:  353
+Implied bound cuts applied:  13
+Flow cuts applied:  2
+Mixed integer rounding cuts applied:  484
+Zero-half cuts applied:  46
+Multi commodity flow cuts applied:  1
+Lift and project cuts applied:  46
+Gomory fractional cuts applied:  38
+
+Root node processing (before b&c):
+  Real time             =    0.66 sec. (1013.68 ticks)
+Parallel b&c, 16 threads:
+  Real time             =  899.47 sec. (445894.93 ticks)
+  Sync time (average)   =  135.04 sec.
+  Wait time (average)   =    0.09 sec.
+                          ------------
+Total (root+branch&cut) =  900.12 sec. (446908.61 ticks)
+Funcion objetivo:  244.0 ( time limit exceeded )
+Paradas de camión:
+  Cliente 1
+  Cliente 13
+  Cliente 10
+  Cliente 14
+  Cliente 11
+  Cliente 9
+  Cliente 3
+  Cliente 4
+  Cliente 12
+  Cliente 6
+  Cliente 7
+  Cliente 40
+  Cliente 38
+  Cliente 37
+  Cliente 32
+  Cliente 39
+  Cliente 29
+  Cliente 35
+  Cliente 28
+  Cliente 33
+  Cliente 34
+  Cliente 24
+  Cliente 26
+  Cliente 19
+  Cliente 17
+  Cliente 15
+  Cliente 16
+  Cliente 21
+  Cliente 25
+  Cliente 20
+  Cliente 23
+  Cliente 8
+  Cliente 5
+  Cliente 1
+Asignaciones a pie:
+  Desde parada 3 atiende a cliente 2
+  Desde parada 15 atiende a cliente 18
+  Desde parada 15 atiende a cliente 22
+  Desde parada 15 atiende a cliente 27
+  Desde parada 28 atiende a cliente 31
+  Desde parada 39 atiende a cliente 30
+  Desde parada 40 atiende a cliente 36

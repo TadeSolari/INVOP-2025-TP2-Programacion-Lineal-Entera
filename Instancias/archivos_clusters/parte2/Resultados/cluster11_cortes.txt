@@ -1,0 +1,75 @@
+2771596 2564131      181.3730    98      248.0000      171.6649 14201507   30.78%
+*2773863+2566099                          246.0000      171.6665            30.22%
+ 2780700 2563896      178.8202    71      246.0000      171.6667 14248625   30.22%
+*2786594+2572057                          245.0000      171.6667            29.93%
+ 2787537 2569485      177.4171    77      245.0000      171.6667 14299248   29.93%
+*2792058+2573146                          244.0000      171.6667            29.64%
+ 2794342 2570470      187.6968    85      244.0000      171.6667 14332011   29.64%
+ 2800891 2577191      184.3200    62      244.0000      171.6667 14368557   29.64%
+
+GUB cover cuts applied:  182
+Clique cuts applied:  63
+Cover cuts applied:  118
+Implied bound cuts applied:  24
+Flow cuts applied:  96
+Mixed integer rounding cuts applied:  709
+Flow path cuts applied:  0
+Zero-half cuts applied:  333
+Multi commodity flow cuts applied:  0
+Lift and project cuts applied:  72
+Gomory fractional cuts applied:  61
+Disjunctive cuts applied:  0
+Cone linearizations applied:  0
+
+Root node processing (before b&c):
+  Real time             =    0.44 sec. (498.26 ticks)
+Parallel b&c, 16 threads:
+  Real time             =  903.36 sec. (478902.20 ticks)
+  Sync time (average)   =  239.40 sec.
+  Wait time (average)   =    0.06 sec.
+                          ------------
+Total (root+branch&cut) =  903.80 sec. (479400.46 ticks)
+Funcion objetivo:  244.0 ( time limit exceeded )
+Paradas de camión:
+  Cliente 1
+  Cliente 14
+  Cliente 2
+  Cliente 13
+  Cliente 6
+  Cliente 5
+  Cliente 20
+  Cliente 24
+  Cliente 15
+  Cliente 25
+  Cliente 27
+  Cliente 23
+  Cliente 17
+  Cliente 21
+  Cliente 18
+  Cliente 16
+  Cliente 19
+  Cliente 22
+  Cliente 31
+  Cliente 39
+  Cliente 29
+  Cliente 40
+  Cliente 32
+  Cliente 36
+  Cliente 28
+  Cliente 34
+  Cliente 35
+  Cliente 38
+  Cliente 33
+  Cliente 37
+  Cliente 10
+  Cliente 12
+  Cliente 1
+Asignaciones a pie:
+  Desde parada 2 atiende a cliente 3
+  Desde parada 2 atiende a cliente 9
+  Desde parada 6 atiende a cliente 7
+  Desde parada 6 atiende a cliente 11
+  Desde parada 13 atiende a cliente 8
+  Desde parada 14 atiende a cliente 4
+  Desde parada 15 atiende a cliente 26
+  Desde parada 36 atiende a cliente 30

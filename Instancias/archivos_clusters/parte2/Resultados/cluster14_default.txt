@@ -1,0 +1,66 @@
+2846865 2599744      182.3895    71      236.0000      170.7727 17248896   27.64%
+ 2854470 2606723      196.2477    83      236.0000      170.7787 17294899   27.64%
+ 2861011 2614661      186.3618    72      236.0000      170.7827 17341630   27.63%
+ 2868678 2619275      198.3333    92      236.0000      170.7896 17368550   27.63%
+
+GUB cover cuts applied:  176
+Clique cuts applied:  38
+Cover cuts applied:  101
+Implied bound cuts applied:  3
+Mixed integer rounding cuts applied:  463
+Zero-half cuts applied:  81
+Lift and project cuts applied:  38
+Gomory fractional cuts applied:  47
+
+Root node processing (before b&c):
+  Real time             =    0.73 sec. (1317.13 ticks)
+Parallel b&c, 16 threads:
+  Real time             =  903.97 sec. (493418.03 ticks)
+  Sync time (average)   =  230.81 sec.
+  Wait time (average)   =    0.08 sec.
+                          ------------
+Total (root+branch&cut) =  904.70 sec. (494735.16 ticks)
+Funcion objetivo:  236.00000000000168 ( time limit exceeded )
+Paradas de camión:
+  Cliente 1
+  Cliente 3
+  Cliente 8
+  Cliente 5
+  Cliente 11
+  Cliente 13
+  Cliente 2
+  Cliente 14
+  Cliente 9
+  Cliente 37
+  Cliente 33
+  Cliente 32
+  Cliente 40
+  Cliente 39
+  Cliente 35
+  Cliente 36
+  Cliente 29
+  Cliente 28
+  Cliente 38
+  Cliente 31
+  Cliente 34
+  Cliente 30
+  Cliente 18
+  Cliente 26
+  Cliente 21
+  Cliente 22
+  Cliente 17
+  Cliente 27
+  Cliente 23
+  Cliente 25
+  Cliente 20
+  Cliente 19
+  Cliente 12
+  Cliente 10
+  Cliente 4
+  Cliente 1
+Asignaciones a pie:
+  Desde parada 2 atiende a cliente 7
+  Desde parada 8 atiende a cliente 6
+  Desde parada 21 atiende a cliente 16
+  Desde parada 27 atiende a cliente 15
+  Desde parada 27 atiende a cliente 24

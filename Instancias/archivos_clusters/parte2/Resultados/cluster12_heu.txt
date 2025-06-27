@@ -1,0 +1,70 @@
+Elapsed time = 816.23 sec. (405572.45 ticks, tree = 2154.30 MB, solutions = 71)
+Nodefile size = 105.88 MB (39.92 MB after compression)
+ 2007306 1777889      202.6404    65      241.0000      186.6842  9384760   22.54%
+ 2014333 1787589      189.5333   100      241.0000      186.6974  9441416   22.53%
+ 2020368 1793898      190.2895    53      241.0000      186.6974  9482076   22.53%
+ 2027030 1800530      196.3421    76      241.0000      186.7077  9516064   22.53%
+ 2032889 1805345      206.8795    74      241.0000      186.7105  9545408   22.53%
+
+GUB cover cuts applied:  22
+Clique cuts applied:  36
+Cover cuts applied:  362
+Implied bound cuts applied:  17
+Flow cuts applied:  3
+Mixed integer rounding cuts applied:  449
+Zero-half cuts applied:  63
+Lift and project cuts applied:  29
+Gomory fractional cuts applied:  32
+
+Root node processing (before b&c):
+  Real time             =    0.47 sec. (448.39 ticks)
+Parallel b&c, 16 threads:
+  Real time             =  900.95 sec. (427963.33 ticks)
+  Sync time (average)   =  144.36 sec.
+  Wait time (average)   =    0.03 sec.
+                          ------------
+Total (root+branch&cut) =  901.42 sec. (428411.72 ticks)
+Funcion objetivo:  241.0 ( time limit exceeded )
+Paradas de camión:
+  Cliente 1
+  Cliente 10
+  Cliente 7
+  Cliente 12
+  Cliente 4
+  Cliente 6
+  Cliente 22
+  Cliente 15
+  Cliente 26
+  Cliente 21
+  Cliente 16
+  Cliente 25
+  Cliente 24
+  Cliente 23
+  Cliente 27
+  Cliente 17
+  Cliente 19
+  Cliente 20
+  Cliente 18
+  Cliente 38
+  Cliente 40
+  Cliente 31
+  Cliente 30
+  Cliente 33
+  Cliente 37
+  Cliente 35
+  Cliente 32
+  Cliente 28
+  Cliente 29
+  Cliente 14
+  Cliente 13
+  Cliente 5
+  Cliente 2
+  Cliente 8
+  Cliente 3
+  Cliente 1
+Asignaciones a pie:
+  Desde parada 2 atiende a cliente 9
+  Desde parada 3 atiende a cliente 11
+  Desde parada 28 atiende a cliente 34
+  Desde parada 28 atiende a cliente 36
+  Desde parada 30 atiende a cliente 39
