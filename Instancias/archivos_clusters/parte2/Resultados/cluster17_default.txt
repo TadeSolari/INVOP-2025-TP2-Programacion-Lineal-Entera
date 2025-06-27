@@ -1,0 +1,70 @@
+ 2521088 2165629      191.9814    93      240.0000      181.0067 19838344   24.58%
+Elapsed time = 838.41 sec. (403796.22 ticks, tree = 2602.43 MB, solutions = 44)
+Nodefile size = 554.56 MB (222.61 MB after compression)
+ 2527855 2172462      192.9724   113      240.0000      181.0080 19909466   24.58%
+ 2534281 2177454      207.5675    87      240.0000      181.0199 19958823   24.58%
+ 2541414 2183042      207.5658    68      240.0000      181.0218 20022159   24.57%
+ 2547649 2189013      200.2532   105      240.0000      181.0343 20077416   24.57%
+
+GUB cover cuts applied:  140
+Clique cuts applied:  28
+Cover cuts applied:  83
+Implied bound cuts applied:  14
+Flow cuts applied:  1
+Mixed integer rounding cuts applied:  377
+Zero-half cuts applied:  49
+Lift and project cuts applied:  46
+Gomory fractional cuts applied:  51
+
+Root node processing (before b&c):
+  Real time             =    0.62 sec. (859.36 ticks)
+Parallel b&c, 16 threads:
+  Real time             =  901.08 sec. (423633.61 ticks)
+  Sync time (average)   =  206.75 sec.
+  Wait time (average)   =    0.15 sec.
+                          ------------
+Total (root+branch&cut) =  901.70 sec. (424492.97 ticks)
+Funcion objetivo:  240.0 ( time limit exceeded )
+Paradas de camión:
+  Cliente 1
+  Cliente 4
+  Cliente 13
+  Cliente 2
+  Cliente 38
+  Cliente 30
+  Cliente 35
+  Cliente 33
+  Cliente 39
+  Cliente 40
+  Cliente 37
+  Cliente 28
+  Cliente 31
+  Cliente 32
+  Cliente 34
+  Cliente 25
+  Cliente 16
+  Cliente 27
+  Cliente 21
+  Cliente 26
+  Cliente 22
+  Cliente 24
+  Cliente 18
+  Cliente 17
+  Cliente 23
+  Cliente 10
+  Cliente 12
+  Cliente 3
+  Cliente 14
+  Cliente 5
+  Cliente 8
+  Cliente 1
+Asignaciones a pie:
+  Desde parada 3 atiende a cliente 11
+  Desde parada 14 atiende a cliente 6
+  Desde parada 14 atiende a cliente 7
+  Desde parada 14 atiende a cliente 9
+  Desde parada 16 atiende a cliente 19
+  Desde parada 22 atiende a cliente 20
+  Desde parada 27 atiende a cliente 15
+  Desde parada 28 atiende a cliente 36
+  Desde parada 31 atiende a cliente 29
